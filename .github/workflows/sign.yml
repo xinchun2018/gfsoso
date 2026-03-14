@@ -27,6 +27,7 @@ jobs:
         env:
           BBS_USERNAME: ${{ secrets.BBS_USERNAME }}
           BBS_PASSWORD: ${{ secrets.BBS_PASSWORD }}
+          BBS_ACCOUNTS_JSON: ${{ secrets.BBS_ACCOUNTS_JSON }}
           BBS_BASE_URL: ${{ secrets.BBS_BASE_URL }}
           BBS_LOGIN_URL: ${{ secrets.BBS_LOGIN_URL }}
           BBS_LOGIN_POST_URL: ${{ secrets.BBS_LOGIN_POST_URL }}
@@ -39,3 +40,4 @@ jobs:
           BBS_ANSWER: ${{ secrets.BBS_ANSWER }}
           BBS_FORCE_DIRECT: "1"
         run: python sign.py
+

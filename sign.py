@@ -1,4 +1,5 @@
-﻿import os
+﻿import json
+import os
 import re
 import sys
 from typing import Optional
@@ -60,14 +61,11 @@ def has_signed(html: str) -> bool:
     return any(k in html for k in keys)
 
 
-def login(session, base_url: str) -> None:
-    username = env("BBS_USERNAME", required=True)
-    password = env("BBS_PASSWORD", required=True)
+def login(session, base_url: str, username: str, password: str, loginfield: str) -> None:
     login_url = env("BBS_LOGIN_URL", f"{base_url}/member.php?mod=logging&action=login")
     login_post_url = env("BBS_LOGIN_POST_URL", "")
     questionid = env("BBS_QUESTIONID", "0")
     answer = env("BBS_ANSWER", "")
-    loginfield = env("BBS_LOGIN_FIELD", "email")
 
     r = session.get(login_url, timeout=30)
     if r.status_code >= 400:
@@ -206,10 +204,40 @@ def sign(session, base_url: str) -> None:
     raise RuntimeError(f"Sign failed. response={pr.text[:500]}")
 
 
-def main() -> int:
-    base_url = env("BBS_BASE_URL", "https://bbs.91bdqu.com").rstrip("/")
+def load_accounts():
+    raw = env("BBS_ACCOUNTS_JSON", "")
+    if raw:
+        try:
+            data = json.loads(raw)
+        except Exception as exc:
+            raise RuntimeError(f"BBS_ACCOUNTS_JSON is not valid JSON: {exc}")
+        if not isinstance(data, list) or not data:
+            raise RuntimeError("BBS_ACCOUNTS_JSON must be a non-empty array.")
 
-    with create_session() as session:
+        accounts = []
+        for i, item in enumerate(data, start=1):
+            if not isinstance(item, dict):
+                raise RuntimeError(f"BBS_ACCOUNTS_JSON item #{i} must be an object.")
+            username = (item.get("username") or "").strip()
+            password = (item.get("password") or "").strip()
+            loginfield = (item.get("loginfield") or env("BBS_LOGIN_FIELD", "email")).strip()
+            if not username or not password:
+                raise RuntimeError(f"BBS_ACCOUNTS_JSON item #{i} missing username/password.")
+            accounts.append({"username": username, "password": password, "loginfield": loginfield})
+        return accounts
+
+    return [
+        {
+            "username": env("BBS_USERNAME", required=True),
+            "password": env("BBS_PASSWORD", required=True),
+            "loginfield": env("BBS_LOGIN_FIELD", "email"),
+        }
+    ]
+
+
+def run_one_account(base_url: str, username: str, password: str, loginfield: str) -> None:
+    session = create_session()
+    try:
         session.headers.update(
             {
                 "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
@@ -219,9 +247,31 @@ def main() -> int:
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
             }
         )
-
-        login(session, base_url)
+        login(session, base_url, username, password, loginfield)
         sign(session, base_url)
+    finally:
+        close_fn = getattr(session, "close", None)
+        if callable(close_fn):
+            close_fn()
+
+
+def main() -> int:
+    base_url = env("BBS_BASE_URL", "https://bbs.91bdqu.com").rstrip("/")
+    accounts = load_accounts()
+    failed = []
+
+    for i, acct in enumerate(accounts, start=1):
+        username = acct["username"]
+        masked = username[:3] + "***" if len(username) > 3 else "***"
+        print(f"[INFO] Account {i}/{len(accounts)}: {masked}")
+        try:
+            run_one_account(base_url, acct["username"], acct["password"], acct["loginfield"])
+        except Exception as exc:
+            failed.append(f"{i}:{username}:{exc}")
+            print(f"[ERROR] Account {i} failed: {exc}")
+
+    if failed:
+        raise RuntimeError("Some accounts failed: " + " | ".join(failed))
 
     return 0
 
