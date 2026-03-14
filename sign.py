@@ -10,10 +10,12 @@ from bs4 import BeautifulSoup
 
 
 def env(name: str, default: Optional[str] = None, required: bool = False) -> str:
-    value = os.getenv(name, default)
-    if required and (value is None or value.strip() == ""):
+    value = os.getenv(name)
+    if value is None or value.strip() == "":
+        value = default
+    if required and (value is None or str(value).strip() == ""):
         raise RuntimeError(f"Missing required env: {name}")
-    return (value or "").strip()
+    return str(value or "").strip()
 
 
 def create_session():
