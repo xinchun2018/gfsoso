@@ -1,17 +1,16 @@
-﻿# bbs.91bdqu.com 自动签到（GitHub Actions）`n`n“谷粉学术文献互助自动签到”
+﻿# 谷粉学术文献互助自动签到(bbs.91bdqu.com)自动签到（GitHub Actions）
 
-参考风格：`xinchun2018/ablesciSign`（Secrets + 定时任务 + Python 脚本）
+参考：`daitcl/ablesciSign`（Secrets + 定时任务 + Python 脚本）
 
 ## 功能
 - GitHub Actions 定时自动执行
 - 自动登录 `https://bbs.91bdqu.com`
-- 兼容 Cloudflare（默认使用 `curl_cffi` 浏览器指纹）
 - 自动识别签到插件：优先 `are_sign`，失败时回退 `dsu_paulsign`
 - 支持单账号和多账号批量签到
 
 ## 运行环境
 - 运行在 GitHub 官方 Runner（`ubuntu-latest`）
-- 不依赖你本地电脑长期在线
+- 不依赖你本地电脑,长期在线
 
 ## Secrets 配置
 在仓库 `Settings -> Secrets and variables -> Actions` 添加。
