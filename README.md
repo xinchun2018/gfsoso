@@ -19,7 +19,20 @@
 - `BBS_USERNAME`
 - `BBS_PASSWORD`
 
-### 可选（多账号模式，优先级高于单账号）
+### 推荐（多账号模式，参照 ablesciSign）
+- `ABLESCI_ACCOUNTS`
+
+格式（每行一个账号）：
+```text
+邮箱1:密码1
+邮箱2:密码2
+```
+
+说明：
+- 使用 `ABLESCI_ACCOUNTS` 时，会忽略 `BBS_USERNAME/BBS_PASSWORD`。
+- 如果未设置 `ABLESCI_ACCOUNTS`，脚本会回退到单账号模式。
+
+### 可选（JSON 多账号，兼容旧配置）
 - `BBS_ACCOUNTS_JSON`
 
 示例：
@@ -60,4 +73,3 @@ python sign.py
   - 尝试把 `BBS_LOGIN_FIELD` 改成 `username` 或 `email`。
 - 多账号有部分失败：
   - 脚本会继续执行其他账号，最后统一报失败列表。
-

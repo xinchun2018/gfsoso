@@ -205,6 +205,31 @@ def sign(session, base_url: str) -> None:
 
 
 def load_accounts():
+    raw_ablesci = env("ABLESCI_ACCOUNTS", "")
+    if raw_ablesci:
+        accounts = []
+        for i, line in enumerate(raw_ablesci.splitlines(), start=1):
+            row = line.strip()
+            if not row:
+                continue
+            if ":" not in row:
+                raise RuntimeError(f"ABLESCI_ACCOUNTS line #{i} is invalid, expected email:password")
+            username, password = row.split(":", 1)
+            username = username.strip()
+            password = password.strip()
+            if not username or not password:
+                raise RuntimeError(f"ABLESCI_ACCOUNTS line #{i} missing email or password")
+            accounts.append(
+                {
+                    "username": username,
+                    "password": password,
+                    "loginfield": env("BBS_LOGIN_FIELD", "email"),
+                }
+            )
+        if not accounts:
+            raise RuntimeError("ABLESCI_ACCOUNTS is empty after parsing.")
+        return accounts
+
     raw = env("BBS_ACCOUNTS_JSON", "")
     if raw:
         try:

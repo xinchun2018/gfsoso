@@ -25,6 +25,7 @@ jobs:
 
       - name: Run sign script
         env:
+          ABLESCI_ACCOUNTS: ${{ secrets.ABLESCI_ACCOUNTS }}
           BBS_USERNAME: ${{ secrets.BBS_USERNAME }}
           BBS_PASSWORD: ${{ secrets.BBS_PASSWORD }}
           BBS_ACCOUNTS_JSON: ${{ secrets.BBS_ACCOUNTS_JSON }}
