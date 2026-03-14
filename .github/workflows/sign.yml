@@ -1,0 +1,41 @@
+﻿name: bbs-91bdqu-auto-sign
+
+on:
+  schedule:
+    - cron: "15 0 * * *" # UTC 00:15, 北京时间 08:15
+  workflow_dispatch:
+
+jobs:
+  sign:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run sign script
+        env:
+          BBS_USERNAME: ${{ secrets.BBS_USERNAME }}
+          BBS_PASSWORD: ${{ secrets.BBS_PASSWORD }}
+          BBS_BASE_URL: ${{ secrets.BBS_BASE_URL }}
+          BBS_LOGIN_URL: ${{ secrets.BBS_LOGIN_URL }}
+          BBS_LOGIN_POST_URL: ${{ secrets.BBS_LOGIN_POST_URL }}
+          BBS_SIGN_PAGE_URL: ${{ secrets.BBS_SIGN_PAGE_URL }}
+          BBS_SIGN_POST_URL: ${{ secrets.BBS_SIGN_POST_URL }}
+          BBS_TODAYSAY: ${{ secrets.BBS_TODAYSAY }}
+          BBS_QDXQ: ${{ secrets.BBS_QDXQ }}
+          BBS_QDMODE: ${{ secrets.BBS_QDMODE }}
+          BBS_QUESTIONID: ${{ secrets.BBS_QUESTIONID }}
+          BBS_ANSWER: ${{ secrets.BBS_ANSWER }}
+          BBS_FORCE_DIRECT: "1"
+        run: python sign.py
